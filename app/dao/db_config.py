@@ -5,4 +5,6 @@ client = AsyncIOMotorClient(DATABASE_URL)
 db = client[DB_NAME]
 
 users_collection = db.users
+product_collection = db.product
+user_product_collection = db.user_product
 
