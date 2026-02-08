@@ -38,7 +38,6 @@ matplotlib-inline==0.2.1
 mdurl==0.1.2
 motor==3.7.1
 nest-asyncio==1.6.0
-ngrok==1.7.0
 packaging==26.0
 parso==0.8.5
 pexpect==4.9.0
