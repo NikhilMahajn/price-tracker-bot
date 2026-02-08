@@ -132,3 +132,15 @@ async def add_tracking_record(record: PriceHistoryModel):
         print(f"Error inserting price record: {e}")
         return None
     
+async def get_price_record_user_product(user_id, product_id):
+    """Get the latest price record for a product"""
+    try:
+        # Use find_one to get the latest price record for this product
+        result = await price_history_collection.find_one(
+            {"product_id": product_id},
+            sort=[("checked_at", -1)]  # Get most recent
+        )
+        return result
+    except Exception as e:
+        print(f"Error fetching price record: {e}")
+        return None

@@ -11,11 +11,12 @@ logger = getLogger(__name__)
 from app.scheduler import fetch_products_prices
 
 async def start_command(user: dict):
+    print(user)
     user_data = UserModel(
         telegram_id=user["id"],
         username=user.get("username"),
         first_name=user.get("first_name")
-    )
+        )
 
     response = await create_user(user_data)
     logger.info(response)
@@ -80,21 +81,6 @@ async def untrack_command(user,product_id):
     if "failed" in response["status"]:
         return  response ["message"]
     return  "Product tracking failed"
-
-async def send_message(chat_id: int, text: str):
-    """Send a message to a chat using Telegram API without blocking the event loop.
-
-    Uses asyncio.to_thread to run requests.post in a thread so the async event loop
-    isn't blocked by the synchronous HTTP call.
-    """
-    async with httpx.AsyncClient(timeout=5) as client:
-        await client.post(
-            f"{TELEGRAM_API}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": text
-                }
-        )
 
     
     

@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 import asyncio
 
-from app.bot import handle_command, send_message
+from app.bot import handle_command
+from app.utils.botUtils import send_message
 from app.utils.loging import getLogger
 from app.exceptions import global_exception_handler
 from app.scheduler import lifespan

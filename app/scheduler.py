@@ -1,7 +1,8 @@
 
-from app.dao.products import get_all_trackings, add_tracking_record
+from app.dao.products import get_all_trackings, add_tracking_record,get_price_record_user_product
 from app.dao.schemas import PriceHistoryModel
 from app.scraper import get_flipkart_product
+from app.utils.botUtils import send_message
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncio
@@ -45,8 +46,22 @@ async def fetch_products_prices():
             except Exception as product_error:
                 logger.error(f"Error processing product {product.get('url')}: {str(product_error)}")
                 continue
-                
         logger.info("Price fetch job completed")
+        
+        
+        # Sending users alert if price droped
+        for product in products:
+            try:
+                record = await get_price_record_user_product(product["user_id"],product["product_id"])
+                if record and record["price"] < product["initial_price"]:
+                    # send user message
+                    message = f"Alert!\nThe Price for {product["product_name"]} just Droped\ninitial price : {product["initial_price"]}\nCurrent price: {record["price"]}"
+                    await send_message(product["user_id"],message)
+                        
+            except Exception as e:
+                print(str(e))
+                logger.error(f"Error in comparing price: {str(e)}")
+    
     except Exception as e:
         logger.error(f"Error in fetch_products_prices: {str(e)}")
 
@@ -62,7 +77,7 @@ async def lifespan(app):
     
     try:
         scheduler.start()
-        logger.info("🟢 Scheduler started successfully")
+        logger.info("Scheduler started successfully")
     except Exception as e:
         logger.error(f"Failed to start scheduler: {str(e)}")
     
