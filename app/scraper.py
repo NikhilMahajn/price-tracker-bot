@@ -2,12 +2,9 @@
 
 import requests
 from bs4 import BeautifulSoup
-from requests.exceptions import RequestException, Timeout, HTTPError
+from app.config import FLIPCART_PRICE_CLASS,FLIPCART_NAME_CLASS
 
-
-from app.config import FLIPCART_PRICE_CLASS
-
-def get_flipkart_price(url: str):
+def get_flipkart_product(url: str):
 
     headers = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
@@ -21,11 +18,19 @@ def get_flipkart_price(url: str):
     soup = BeautifulSoup(response.text, "html.parser")
 
     price_tag = soup.find("div", class_=FLIPCART_PRICE_CLASS)
+    title_tag = soup.find("span", class_=FLIPCART_NAME_CLASS)
+    title = None
+    if title_tag:
+        title = title_tag.text.strip()
+
 
     if price_tag:
         price = price_tag.text.strip().replace("₹","").replace(",","")
-        print("Price:", price)
-        return price
+        return {
+            "title": title,
+            "price": price
+        }
+        
     else:
         print("Price not found")
         return None

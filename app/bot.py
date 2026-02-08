@@ -2,11 +2,10 @@ import httpx
 import datetime
 from app.config import TELEGRAM_API
 from app.dao.users import create_user
-from app.dao.products import createProduct,track_product,getUserProducts
+from app.dao.products import createProduct,track_product,getUserProducts,untrack_product
 from app.dao.schemas import UserModel
 from app.utils.botUtils import detect_platform,is_url
 from app.utils.loging import getLogger
-from app.scraper import get_flipkart_price
 logger = getLogger(__name__)
 
 async def start_command(user: dict):
@@ -61,12 +60,21 @@ async def track_command(user,link):
     
 async def list_command(user):
     products = await getUserProducts(user)
-    prodcut_list = ""
-    print(products)
+    prodcut_str = "\nHere are the prodcuts list I am currently tracking for you\n"
+    idx = 1
     for product in products:
-        prodcut_list += f"\n {product["url"]} -> {product["initial_price"]}"
-    return prodcut_list
+        prodcut_str += f"\n{idx}) {product["product_name"]}\nprice : {product["initial_price"]}\nclick here /untrack_{product["product_id"]} to remove tracking\n"
+        idx += 1
+    return prodcut_str
 
+async def untrack_command(user,product_id):
+    
+    response = await untrack_product(user,product_id)
+    if "success" in response["status"]:
+        return  f"I will not track {response["product_name"]}"
+    if "failed" in response["status"]:
+        return  response ["message"]
+    return  "Product tracking failed"
 
 async def send_message(chat_id: int, text: str):
     """Send a message to a chat using Telegram API without blocking the event loop.
@@ -107,12 +115,14 @@ async def handle_command(data) -> str:
 
         if is_url(text):
             return await track_command(user,text)
-        if command == "/start":
+        elif command == "/start":
             return await start_command(user)
         elif command == "/help":
             return help_command(user)
         elif command == "/list":
             return await list_command(user)
+        elif command.split("_")[0] == "/untrack":
+            return await untrack_command(user,command.split("_")[1])
 
         else: 
             return help_command(user)

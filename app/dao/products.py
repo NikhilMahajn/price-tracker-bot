@@ -1,6 +1,7 @@
 from app.dao.db_config import product_collection,user_product_collection
-from app.scraper import get_flipkart_price
+from app.scraper import get_flipkart_product
 from datetime import datetime
+from bson.objectid import ObjectId
 
 async def createProduct(url,platform):
     try:
@@ -33,12 +34,13 @@ async def track_product(user,product_id,url):
             "message":"product is already being tracked",
             "product_id": str(product_id),
         } 
-        price = get_flipkart_price(url)
+        prodcut = get_flipkart_product(url)
         user_product = {
             "user_id": user["id"],
             "product_id": product_id,
-            "initial_price":int(price),   
+            "initial_price":int(prodcut["price"]),   
             "target_price": None,
+            "product_name":prodcut["title"],
             "is_tracking": True,
             "created_at": datetime.utcnow()
         }
@@ -66,3 +68,32 @@ async def getUserProducts(user):
         product_list.append(user_product|producut)
         
     return product_list
+
+async def untrack_product(user,product_id):
+    try:
+        track_record = await user_product_collection.find_one({
+                    "user_id": user["id"],
+                    "product_id": ObjectId(product_id)
+                    })
+        
+        prouct_name = ""
+        if track_record:
+            prouct_name = track_record["product_name"]
+            await user_product_collection.delete_one({
+                    "user_id": user["id"],
+                    "product_id": ObjectId(product_id)
+                    })
+        return {
+                "status": "success",
+                "message": "Product tracking removed",
+                "product_id": str(product_id),
+                "product_name":prouct_name
+            }
+    except Exception as e:
+        print(str(e))
+        return {
+            "status": "failed",
+            "message": "Product untracking failed",
+            "product_id": str(product_id)
+            
+        }
