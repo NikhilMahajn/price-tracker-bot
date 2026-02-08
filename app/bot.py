@@ -8,6 +8,8 @@ from app.utils.botUtils import detect_platform,is_url
 from app.utils.loging import getLogger
 logger = getLogger(__name__)
 
+from app.scheduler import fetch_products_prices
+
 async def start_command(user: dict):
     user_data = UserModel(
         telegram_id=user["id"],
@@ -59,7 +61,10 @@ async def track_command(user,link):
 
     
 async def list_command(user):
+    
     products = await getUserProducts(user)
+    if not products:
+        return  "\nHey, You dont have any active trackings\nShare product link to start tracking\n"
     prodcut_str = "\nHere are the prodcuts list I am currently tracking for you\n"
     idx = 1
     for product in products:
@@ -86,7 +91,7 @@ async def send_message(chat_id: int, text: str):
         await client.post(
             f"{TELEGRAM_API}/sendMessage",
             json={
-                 "chat_id": chat_id,
+                "chat_id": chat_id,
                 "text": text
                 }
         )
@@ -121,6 +126,9 @@ async def handle_command(data) -> str:
             return help_command(user)
         elif command == "/list":
             return await list_command(user)
+        elif command == "/test":
+            await fetch_products_prices()
+            return "test"
         elif command.split("_")[0] == "/untrack":
             return await untrack_command(user,command.split("_")[1])
 

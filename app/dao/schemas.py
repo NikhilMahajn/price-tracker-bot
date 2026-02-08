@@ -61,7 +61,7 @@ class UserModel(BaseModel):
         
 
 # =========================
-# Procut
+# Prodcut
 # =========================
 class Product(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
@@ -91,6 +91,26 @@ class UserProductModel(BaseModel):
     is_tracking: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+    model_config = {
+        "populate_by_name": True,
+        "validate_by_name": True,
+        "arbitrary_types_allowed": True,
+        "json_encoders": {
+            PyObjectId: str
+        }
+    }
+
+
+# =========================
+# PRICE HISTORY
+# =========================
+class PriceHistoryModel(BaseModel):
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    product_id: PyObjectId
+    price: int
+    checked_at: datetime = Field(default_factory=datetime.utcnow)
+
+    
     model_config = {
         "populate_by_name": True,
         "validate_by_name": True,

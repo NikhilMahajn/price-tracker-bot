@@ -1,4 +1,5 @@
-from app.dao.db_config import product_collection,user_product_collection
+from app.dao.db_config import product_collection,user_product_collection,price_history_collection
+from app.dao.schemas import PriceHistoryModel
 from app.scraper import get_flipkart_product
 from datetime import datetime
 from bson.objectid import ObjectId
@@ -83,6 +84,13 @@ async def untrack_product(user,product_id):
                     "user_id": user["id"],
                     "product_id": ObjectId(product_id)
                     })
+            
+        # Delete from product if No Prodcut tracking is active for the product
+        product_exits = await user_product_collection.find_one({"product_id": ObjectId(product_id)})
+        
+        if not product_exits:
+            await product_collection.delete_one({"_id": ObjectId(product_id)})
+            
         return {
                 "status": "success",
                 "message": "Product tracking removed",
@@ -97,3 +105,30 @@ async def untrack_product(user,product_id):
             "product_id": str(product_id)
             
         }
+        
+async def get_all_trackings():
+    trackings = user_product_collection.find()
+    product_list = []
+    async for track in trackings:
+        producut = await product_collection.find_one({"_id": track["product_id"]})
+        product_list.append(track|producut)
+    return product_list
+
+
+async def add_tracking_record(record: PriceHistoryModel):
+    print("Adding record")
+    try:
+        # Option 1: Manually create a dictionary
+        data = {
+            "product_id": record.product_id,
+            "price": record.price,
+            "timestamp": datetime.utcnow() # Good practice to add a timestamp
+        }
+        
+        result = await price_history_collection.insert_one(data)
+        return result.inserted_id
+        
+    except Exception as e:
+        print(f"Error inserting price record: {e}")
+        return None
+    

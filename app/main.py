@@ -4,11 +4,12 @@ import asyncio
 from app.bot import handle_command, send_message
 from app.utils.loging import getLogger
 from app.exceptions import global_exception_handler
+from app.scheduler import lifespan
 
 logger = getLogger(__name__)
 
 # APP Configurations
-app = FastAPI(title="Telegram Price Tracker)")
+app = FastAPI(title="Telegram Price Tracker", lifespan=lifespan)
 app.add_exception_handler(Exception, global_exception_handler)
 
 # Helth Check

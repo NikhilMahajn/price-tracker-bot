@@ -7,4 +7,6 @@ db = client[DB_NAME]
 users_collection = db.users
 product_collection = db.product
 user_product_collection = db.user_product
+price_history_collection = db.price_history
+
 
