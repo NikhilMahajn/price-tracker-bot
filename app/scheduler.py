@@ -58,7 +58,7 @@ async def lifespan(app):
     scheduler = AsyncIOScheduler()
     
     # Schedule the scraper to run every 30 minutes
-    scheduler.add_job(fetch_products_prices, 'interval', minutes=1, id='price_fetcher')
+    scheduler.add_job(fetch_products_prices, 'interval', hours=12, id='price_fetcher')
     
     try:
         scheduler.start()
