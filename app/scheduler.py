@@ -30,7 +30,7 @@ async def fetch_products_prices():
                 # Add delay between requests to be respectful to the server
                 await asyncio.sleep(random.uniform(2, 5))
                 
-                response = get_flipkart_product(product.get("url"))
+                response = await get_flipkart_product(product.get("url"))
                 if response:
                     record = PriceHistoryModel(
                         product_id=ObjectId(product["product_id"]),
